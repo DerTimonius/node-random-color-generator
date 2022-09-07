@@ -9,6 +9,22 @@ let width = 31;
 let height = 9;
 let output = '';
 
+const supportedColors = [
+  'red',
+  'orange',
+  'yellow',
+  'green',
+  'blue',
+  'purple',
+  'pink',
+  'monochrome',
+];
+const supportedLuminosity = ['bright', 'light', 'dark'];
+
+function correctDimensions(inputWidth, inputHeight) {
+  return inputWidth >= 21 && inputHeight >= 7 ? true : false;
+}
+
 /* changes the color depending on the user input
    if none is given the color is completely random*/
 if (args.length > 0) {
@@ -24,20 +40,38 @@ if (args.length > 0) {
       luminosity: colorLuminosity,
     });
   } else if (args.length === 1) {
-    color = randomColor({ hue: args[0] });
+    // checks whether the input is a color or a luminosity value
+    if (supportedColors.includes(args[0])) {
+      color = randomColor({ hue: args[0] });
+    } else if (supportedLuminosity.includes(args[0])) {
+      color = randomColor({ luminosity: args[0] });
+    }
   } else if (args.length === 2) {
-    color = randomColor({
-      hue: args[0],
-      luminosity: args[1],
-    });
+    // checks if the first input is a color or a luminosity value
+    if (supportedColors.includes(args[0])) {
+      color = randomColor({
+        hue: args[0],
+        luminosity: args[1],
+      });
+    } else {
+      color = randomColor({
+        hue: args[1],
+        luminosity: args[0],
+      });
+    }
   } else if (args.length === 3) {
     const dimensions = args[0].split('X');
-    width = dimensions[0];
-    height = dimensions[1];
-    color = randomColor({
-      hue: args[1],
-      luminosity: args[2],
-    });
+    // checks if the input dimensions meet a certain threshold
+    if (correctDimensions(dimensions[0], dimensions[1])) {
+      width = dimensions[0];
+      height = dimensions[1];
+      color = randomColor({
+        hue: args[1],
+        luminosity: args[2],
+      });
+    } else {
+      throw new Error('Wrong dimensions, must be at least 21X7');
+    }
   }
 } else {
   color = randomColor();
