@@ -2,11 +2,11 @@
 
 If the program is run without any additional input, it will print a certain pattern in the color written inside the box.
 
-![Screenshot of the output with a colorized box of hashtags and the hexcolor used inside] (./img/Screenshot-1.png)
+![Screenshot of the output with a colorized box of hashtags and the hexcolor used inside] (main/img/Screenshot-1.png)
 
 But the user can also change the input by providing a single value for the hue - then a random color will be chosen according to that hue.
 
-!(./img/Screenshot-3.png)
+!(main/img/Screenshot-3.png)
 
 The user may also provide an additional value for the luminosity.
 !(./img/Screenshot-2.png)
