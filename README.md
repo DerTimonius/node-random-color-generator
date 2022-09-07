@@ -2,11 +2,7 @@
 
 If the program is run without any additional input, it will print a certain pattern in the color written inside the box.
 
-# <<<<<<< HEAD
-
 ![Screenshot of the output with a colorized box of hashtags and the hexcolor used inside] (/main/img/Screenshot-1.png)
-
-> > > > > > > 930aaac0aad4cad6bc3c7b37ebace476ad29955b
 
 But the user can also change the input by providing a single value for the hue - then a random color will be chosen according to that hue.
 
