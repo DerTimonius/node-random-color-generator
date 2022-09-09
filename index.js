@@ -79,7 +79,9 @@ if (args.length > 0) {
 
 // changes the output depending on the user input
 for (let i = 1; i <= height; i++) {
-  if (i < Math.ceil(height / 2) - 1 || i > Math.ceil(height / 2) + 1) {
+  if (i === height) {
+    output += '#'.repeat(width);
+  } else if (i < Math.ceil(height / 2) - 1 || i > Math.ceil(height / 2) + 1) {
     output += '#'.repeat(width) + '\n';
   } else {
     if (i === Math.ceil(height / 2) - 1 || i === Math.ceil(height / 2) + 1) {
