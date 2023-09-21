@@ -1,101 +1,117 @@
+import { cancel, intro, isCancel, outro, select, text } from '@clack/prompts';
 import chalk from 'chalk';
-import promptSync from 'prompt-sync';
 import randomColor from 'randomcolor';
-
-const prompt = promptSync();
-const args = process.argv.slice(2);
-let color;
-let width = 31;
-let height = 9;
-let output = '';
-
-const supportedColors = [
-  'red',
-  'orange',
-  'yellow',
-  'green',
-  'blue',
-  'purple',
-  'pink',
-  'monochrome',
-];
-const supportedLuminosity = ['bright', 'light', 'dark'];
 
 function correctDimensions(inputWidth, inputHeight) {
   return inputWidth >= 21 && inputHeight >= 7 ? true : false;
 }
 
-/* changes the color depending on the user input
-   if none is given the color is completely random*/
-if (args.length > 0) {
-  if (args[0] === 'ask') {
-    const colorHue = prompt(
-      'what color would you like? e.g. blue, red, green etc.\t',
-    );
-    const colorLuminosity = prompt(
-      'And what luminosity would you like? e.g. light, dark\t',
-    );
-    color = randomColor({
-      hue: colorHue,
-      luminosity: colorLuminosity,
-    });
-  } else if (args.length === 1) {
-    // checks whether the input is a color or a luminosity value
-    if (supportedColors.includes(args[0])) {
-      color = randomColor({ hue: args[0] });
-    } else if (supportedLuminosity.includes(args[0])) {
-      color = randomColor({ luminosity: args[0] });
-    }
-  } else if (args.length === 2) {
-    // checks if the first input is a color or a luminosity value
-    if (supportedColors.includes(args[0])) {
-      color = randomColor({
-        hue: args[0],
-        luminosity: args[1],
-      });
+function drawOutput(inputWidth, inputHeight, inputColor) {
+  let output = '\n';
+  for (let i = 1; i <= inputHeight; i++) {
+    if (i === inputHeight) {
+      output += '#'.repeat(inputWidth);
+    } else if (
+      i < Math.ceil(inputHeight / 2) - 1 ||
+      i > Math.ceil(inputHeight / 2) + 1
+    ) {
+      output += '#'.repeat(inputWidth) + '\n';
     } else {
-      color = randomColor({
-        hue: args[1],
-        luminosity: args[0],
-      });
-    }
-  } else if (args.length === 3) {
-    const dimensions = args[0].split('X');
-    // checks if the input dimensions meet a certain threshold
-    if (correctDimensions(dimensions[0], dimensions[1])) {
-      width = dimensions[0];
-      height = dimensions[1];
-      color = randomColor({
-        hue: args[1],
-        luminosity: args[2],
-      });
-    } else {
-      throw new Error('Wrong dimensions, must be at least 21X7');
+      if (
+        i === Math.ceil(inputHeight / 2) - 1 ||
+        i === Math.ceil(inputHeight / 2) + 1
+      ) {
+        output +=
+          '#'.repeat(5) + ' '.repeat(inputWidth - 10) + '#'.repeat(5) + '\n';
+      } else {
+        output +=
+          '#'.repeat(5) +
+          ' '.repeat((inputWidth - 16) / 2) +
+          inputColor +
+          ' '.repeat((inputWidth - 16) / 2) +
+          '#'.repeat(5) +
+          '\n';
+      }
     }
   }
-} else {
-  color = randomColor();
+  return output;
 }
 
-// changes the output depending on the user input
-for (let i = 1; i <= height; i++) {
-  if (i === height) {
-    output += '#'.repeat(width);
-  } else if (i < Math.ceil(height / 2) - 1 || i > Math.ceil(height / 2) + 1) {
-    output += '#'.repeat(width) + '\n';
-  } else {
-    if (i === Math.ceil(height / 2) - 1 || i === Math.ceil(height / 2) + 1) {
-      output += '#'.repeat(5) + ' '.repeat(width - 10) + '#'.repeat(5) + '\n';
-    } else {
-      output +=
-        '#'.repeat(5) +
-        ' '.repeat((width - 16) / 2) +
-        color +
-        ' '.repeat((width - 16) / 2) +
-        '#'.repeat(5) +
-        '\n';
+function quit() {
+  cancel('Sad to see you leave!');
+  process.exit(0);
+}
+
+const supportedColors = [
+  { value: 'random', label: 'Random' },
+  { value: 'red', label: 'Red' },
+  { value: 'orange', label: 'Orange' },
+  { value: 'yellow', label: 'Yellow' },
+  { value: 'green', label: 'Green' },
+  { value: 'blue', label: 'Blue' },
+  { value: 'purple', label: 'Purple' },
+  { value: 'pink', label: 'Pink' },
+  { value: 'monochrome', label: 'Monochrome' },
+];
+
+// get values using clack
+intro('Welcome to the random color generator!');
+const selectedHue = await select({
+  message: 'Select a color hue',
+  options: supportedColors,
+});
+
+if (isCancel(selectedHue)) {
+  quit();
+}
+
+const selectedLuminosity = await select({
+  message: 'Select a luminosity',
+  options: [
+    {
+      value: 'random',
+      label: 'Random',
+    },
+    {
+      value: 'dark',
+      label: 'Dark',
+    },
+    {
+      value: 'bright',
+      label: 'Bright',
+    },
+    {
+      value: 'light',
+      label: 'Light',
+    },
+  ],
+});
+
+if (isCancel(selectedLuminosity)) {
+  quit();
+}
+
+const size = await text({
+  message:
+    'The default output is 31x9. You can resize it if you want (in the same format)',
+  placeholder: '31x9',
+  defaultValue: '31x9',
+  validate(value) {
+    if (value && value.split('x').some((num) => isNaN(parseInt(num)))) {
+      return 'Only numbers allowed';
     }
-  }
+    if (value && !correctDimensions(value.split('x')[0], value.split('x')[1])) {
+      return 'Should be at least 21x7';
+    }
+  },
+});
+
+if (isCancel(size)) {
+  quit();
 }
 
-console.log(chalk.hex(color).visible(output));
+const [width, height] = size.split('x');
+
+const color = randomColor({ hue: selectedHue, luminosity: selectedLuminosity });
+
+outro(chalk.hex(color).visible(drawOutput(width, height, color)));
